@@ -1,3 +1,4 @@
+import GUI from 'lil-gui';
 import * as Stats from 'stats-js';
 import { Renderer } from './webgl/renderer';
 import { Display } from './display';
@@ -25,9 +26,11 @@ export class MyApp {
         this.canvas.addEventListener('mousemove', e => this.mousemove(e));
         this.canvas.addEventListener('mousedown', this.mousedown.bind(this));
         this.canvas.addEventListener('mouseup', this.mouseup.bind(this));
+        this.canvas.addEventListener('touchmove', e => this.touchmove(e));
 
+        this.setGui();
         if (this.debug) {
-            this.setDebug();
+            this.setStats();
         }
 
         this.loop();
@@ -36,8 +39,7 @@ export class MyApp {
     setSize() {
         const width = window.innerWidth;
         const height = window.innerHeight;
-        // const pixelRatio = Math.min(window.devicePixelRatio, 2);
-        const pixelRatio = 1;
+        const pixelRatio = Math.min(window.devicePixelRatio, 2);
 
         this.canvas.width = Math.floor(width * pixelRatio);
         this.canvas.height = Math.floor(height * pixelRatio);
@@ -65,19 +67,9 @@ export class MyApp {
                 [movement[0] * 10, movement[1] * 10, movement[2] * 10, 0],
                 [position[0] + 0.5, position[1] + 0.5, position[2] + 0.5]
             );
-        }     
-
-        // this.simulator.addForce(
-        //     [this.mouse.dx, this.mouse.dy, 0.0, 0.0],
-        //     [this.mouse.x / window.innerWidth, this.mouse.y / window.innerHeight]
-        // );
-
+        }
 
         if (this.mouse.down == true) {
-            // this.simulator.addSource(
-            //     [Math.sqrt(this.mouse.dx * this.mouse.dx + this.mouse.dy * this.mouse.dy), 0.0, 0.0, 0.0],
-            //     [this.mouse.x / window.innerWidth, this.mouse.y / window.innerHeight]
-            // )
             this.display.rotation.dtheta = -Math.PI * this.mouse.dx / window.innerWidth;
             this.display.rotation.dphi = Math.PI * this.mouse.dy / window.innerHeight;
         }
@@ -89,6 +81,33 @@ export class MyApp {
 
     mouseup() {
         this.mouse.down = false;
+    }
+
+    touchmove() {
+        e.preventDefault();
+        const touches = e.touches;
+
+        if (touches.length == 1) {
+            const x = touches[0].pageX;
+            const y = window.innerHeight - touches[0].pageY;
+            
+            this.mouse.dx = x - this.mouse.x;
+            this.mouse.dy = y - this.mouse.y;
+            this.mouse.x = x;
+            this.mouse.y = y;
+
+            const position = this.display.camera.inverseProjection(this.mouse.x * 2 - 1, this.mouse.y * 2 - 1);
+            if (Math.abs(position[0]) < 0.5 && Math.abs(position[1]) < 0.5 && Math.abs(position[2]) < 0.5) {
+                const movement = this.display.camera.inverseProjection(this.mouse.dx * window.innerWidth / window.innerHeight, this.mouse.dy);
+                this.simulator.add(
+                    [movement[0] * 10, movement[1] * 10, movement[2] * 10, 0],
+                    [position[0] + 0.5, position[1] + 0.5, position[2] + 0.5]
+                );
+            } else {
+                this.display.rotation.dtheta = -Math.PI * this.mouse.dx / window.innerWidth;
+                this.display.rotation.dphi = Math.PI * this.mouse.dy / window.innerHeight;
+            }
+        }
     }
 
     loop() {
@@ -106,7 +125,18 @@ export class MyApp {
         this.display.render();
     }
 
-    setDebug() {
+    setGui() {
+        this.gui = new GUI();
+        this.guiObject = {};
+        
+        this.gui.add(this.display.param, "alphaScale").min(0).max(1).step(0.01);
+        this.gui.add(this.display.param, "cutoffAlpha").min(0).max(1).step(0.01);
+        this.gui.add(this.simulator.param, "mouseScale").min(0.0005).max(0.02).step(0.0005);
+        this.gui.add(this.simulator.param, "viscosity").min(1e-4).max(1e-2).step(1e-4);
+        this.gui.add(this.simulator.param, "rho").min(10).max(1000).step(1);
+    }
+
+    setStats() {
         this.stats = new Stats();
         this.stats.showPanel(0);
         document.body.appendChild(this.stats.dom);

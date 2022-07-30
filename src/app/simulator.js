@@ -48,6 +48,7 @@ export class Simulator {
             center: 'vec3',
             source: 'vec4',
             dt: 'float',
+            mouseScale: 'float',
         });
         this.advectShader = new Shader(this.renderer, vertexShader, simulateFragmentShader + advectShader);
         this.advectShader.createAttributes({position: 3, uv2: 2});
@@ -95,6 +96,14 @@ export class Simulator {
             rho: 'float',
             dt: 'float',
         });
+
+        this.param = {
+            dt: 1 / 60,
+            mouseScale: 0.01,
+            iteration: 5,
+            viscosity: 1e-3,
+            rho: 10,
+        }
     }
 
     setRenderer(shader, uniforms) {
@@ -107,7 +116,8 @@ export class Simulator {
             map: this.velocity.texture, 
             source: source, 
             center: center, 
-            dt: 1 / 30,
+            dt: this.param.dt,
+            mouseScale: this.param.mouseScale,
         };
         this.setRenderer(this.addShader, uniforms);
         this.velocity.render(false);
@@ -125,7 +135,7 @@ export class Simulator {
         let uniforms = {
             map: this.velocity.texture, 
             velocity: this.velocity.texture,
-            dt: 1 / 30, 
+            dt: this.param.dt, 
         };
         this.setRenderer(this.advectShader, uniforms);
         this.velocity.render(false);
@@ -144,12 +154,12 @@ export class Simulator {
         this.setRenderer(this.colorShader, uniforms);
         this.tmpframe.render(false);
 
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < this.param.iteration; i++) {
             uniforms = {
                 map: this.velocity.texture,
                 map0: this.tmpframe.texture,
-                viscosity: 1e-3,
-                dt: 1 / 30,
+                viscosity: this.param.viscosity,
+                dt: this.param.dt,
             };
             this.setRenderer(this.diffuseShader, uniforms);
             this.velocity.render(false);
@@ -175,12 +185,12 @@ export class Simulator {
         this.setRenderer(this.boundaryShader, uniforms);
         this.tmpframe.render(false);
 
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < this.param.iteration; i++) {
             uniforms = {
                 map: this.pressure.texture,
                 divergence: this.tmpframe.texture,
-                rho: 1.0,
-                dt: 1 / 30,
+                rho: this.param.rho,
+                dt: this.param.dt,
             };
             this.setRenderer(this.poissonShader, uniforms);
             this.pressure.render(false);
@@ -195,8 +205,8 @@ export class Simulator {
         uniforms = {
             map: this.velocity.texture,
             pressure: this.pressure.texture,
-            rho: 1.0,
-            dt: 1 / 30,
+            rho: this.param.rho,
+            dt: this.param.dt,
         };
         this.setRenderer(this.projectShader, uniforms);
         this.velocity.render(false);

@@ -8,7 +8,7 @@ module.exports = {
       path: `${__dirname}/public`,
       filename: "main.min.js"
     },
-    mode: "development",
+    mode: "production",
     module: {
         rules: [
             {

@@ -20,13 +20,20 @@ export class Display {
             projectionMatrix: 'mat4', 
             map: 'sampler3D',
             size: 'vec3',
+            alphaScale: 'float',
+            cutoffAlpha: 'float',
         });
 
         this.camera = new Camera();
-        this.camera.setRadius(3);
+        this.camera.setRadius(2.5);
         this.camera.perspective(Math.PI / 4, width / height, 0.001, 20);
 
         this.rotation = {dtheta: 0, dphi: 0, decay: 0.95};
+
+        this.param = {
+            alphaScale: 0.01,
+            cutoffAlpha: 0.0,
+        }
     }
 
     updateCamera() {
@@ -46,7 +53,13 @@ export class Display {
 
     render() {
         this.renderer.resize(this.size.width, this.size.height);
-        this.renderer.set(this.displayCube, this.shader, {map: this.texture, size: [1, 1, 1]}, this.camera, true);
+        let uniforms = {
+            map: this.texture, 
+            size: [1, 1, 1],
+            alphaScale: this.param.alphaScale,
+            cutoffAlpha: this.param.cutoffAlpha,
+        };
+        this.renderer.set(this.displayCube, this.shader, uniforms, this.camera, true);
         this.renderer.render({
             clearColor: [0.0, 0.0, 0.0, 1.0],
             clearDepth: 1.0,
