@@ -37,11 +37,12 @@ export class Framebuffer {
         gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
     
         const list = []
-        for (let j = 0; j < depth; j += 8) {
+        this.maxBuffers = gl.getParameter(gl.MAX_DRAW_BUFFERS);
+        for (let j = 0; j < depth; j += this.maxBuffers) {
             const framebuffer = gl.createFramebuffer();
             gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
     
-            const layers = Math.min(8, depth - j);
+            const layers = Math.min(this.maxBuffers, depth - j);
             const buffers = []
             for (let i = 0; i < layers; i++) {
                 gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + i, texture, 0, i+j);
@@ -63,7 +64,7 @@ export class Framebuffer {
         this.renderer.resize(this.size.width, this.size.height);
         this.renderer.uniforms["resolution"] = [this.size.width, this.size.height, this.size.depth];    
         for (let i = 0; i < currentFrame.list.length; i++) {   
-            this.renderer.uniforms["startZ"] = i * 8;
+            this.renderer.uniforms["startZ"] = i * this.maxBuffers;
             this.renderer.render({
                 framebuffer: currentFrame.list[i].framebuffer,
                 buffers: currentFrame.list[i].buffers,

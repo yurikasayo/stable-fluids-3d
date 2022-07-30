@@ -10,8 +10,9 @@ in vec3 vCameraPos;
 
 uniform sampler3D map;
 uniform vec3 size;
+uniform int colorMode;
 uniform float alphaScale;
-uniform float cutoffAlpha;
+uniform float cutoff;
 
 out vec4 outColor;
 
@@ -27,8 +28,17 @@ void main() {
          && texCoord.y >= 0.0 && texCoord.y <= 1.0
          && texCoord.z >= 0.0 && texCoord.z <= 1.0) {
             vec4 color = texture(map, texCoord);
-            color = vec4(length(color.xyz));
-            float cutOffAlpha = alphaScale * step(cutoffAlpha, color.a);
+            color.a = length(color.xyz);
+            switch(colorMode) {
+                case 0:
+                    color.rgb = vec3(length(color.xyz));
+                    break;
+                case 1:
+                    color.rgb = abs(color.xyz);
+                    break;
+            }
+
+            float cutOffAlpha = alphaScale * step(cutoff, color.a);
             outColor = color * cutOffAlpha + outColor * (1.0 - cutOffAlpha);
         }
     }

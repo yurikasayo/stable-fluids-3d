@@ -20,18 +20,20 @@ export class Display {
             projectionMatrix: 'mat4', 
             map: 'sampler3D',
             size: 'vec3',
+            colorMode: 'int',
             alphaScale: 'float',
-            cutoffAlpha: 'float',
+            cutoff: 'float',
         });
 
         this.camera = new Camera();
-        this.camera.setRadius(2.5);
+        this.camera.setRadius(3);
         this.camera.perspective(Math.PI / 4, width / height, 0.001, 20);
 
         this.rotation = {dtheta: 0, dphi: 0, decay: 0.95};
 
         this.param = {
-            alphaScale: 0.01,
+            colorMode: 0,
+            alphaScale: 0.05,
             cutoffAlpha: 0.0,
         }
     }
@@ -56,8 +58,9 @@ export class Display {
         let uniforms = {
             map: this.texture, 
             size: [1, 1, 1],
+            colorMode: this.param.colorMode,
             alphaScale: this.param.alphaScale,
-            cutoffAlpha: this.param.cutoffAlpha,
+            cutoff: this.param.cutoffAlpha,
         };
         this.renderer.set(this.displayCube, this.shader, uniforms, this.camera, true);
         this.renderer.render({

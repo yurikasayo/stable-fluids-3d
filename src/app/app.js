@@ -83,7 +83,7 @@ export class MyApp {
         this.mouse.down = false;
     }
 
-    touchmove() {
+    touchmove(e) {
         e.preventDefault();
         const touches = e.touches;
 
@@ -96,7 +96,7 @@ export class MyApp {
             this.mouse.x = x;
             this.mouse.y = y;
 
-            const position = this.display.camera.inverseProjection(this.mouse.x * 2 - 1, this.mouse.y * 2 - 1);
+            const position = this.display.camera.inverseProjection(this.mouse.x / window.innerWidth * 2 - 1, this.mouse.y / window.innerHeight * 2 - 1);
             if (Math.abs(position[0]) < 0.5 && Math.abs(position[1]) < 0.5 && Math.abs(position[2]) < 0.5) {
                 const movement = this.display.camera.inverseProjection(this.mouse.dx * window.innerWidth / window.innerHeight, this.mouse.dy);
                 this.simulator.add(
@@ -129,6 +129,7 @@ export class MyApp {
         this.gui = new GUI();
         this.guiObject = {};
         
+        this.gui.add(this.display.param, "colorMode").min(0).max(1).step(1);
         this.gui.add(this.display.param, "alphaScale").min(0).max(1).step(0.01);
         this.gui.add(this.display.param, "cutoffAlpha").min(0).max(1).step(0.01);
         this.gui.add(this.simulator.param, "mouseScale").min(0.0005).max(0.02).step(0.0005);
