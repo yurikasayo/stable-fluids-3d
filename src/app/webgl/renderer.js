@@ -102,13 +102,6 @@ export class Renderer {
                 if (shader.uniforms[key].type == "sampler2D") {
                     gl.activeTexture(gl.TEXTURE0 + textureId);
                     gl.bindTexture(gl.TEXTURE_2D, uniforms[key]);
-                    if (this.useLinear) {
-                        gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-                        gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-                    } else {
-                        gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-                        gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                    }
                     this.setUniform(shader.uniforms[key].location, textureId, shader.uniforms[key].type);
                     textureId++;
                 } else if (shader.uniforms[key].type == "sampler3D") {
